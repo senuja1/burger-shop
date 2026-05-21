@@ -1,1058 +1,1000 @@
-import { useState, useRef, useEffect } from "react";
-import { motion, useScroll, useTransform, AnimatePresence, useInView } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import {
-  MapPin, Phone, Mail,
-  ChevronDown, Star, Users, Bed, Wifi, UtensilsCrossed,
-  Car, Sparkles, Coffee, Clock, ArrowRight, MessageCircle,
-  Calendar, Waves, Sun, Globe, Send, Menu, X,
+  AnimatePresence,
+  motion,
+  useInView,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "framer-motion";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  ChevronDown,
+  Clock,
+  Flame,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Plus,
+  ShoppingBag,
+  Star,
+  CheckCircle2,
 } from "lucide-react";
 
-/* ─────────────────────────── DESIGN TOKENS ─────────────────────────── */
-const C = {
-  gold: "#C9A96E",
-  goldLight: "#E8D5A3",
-  charcoal: "#1A1A18",
-  beige: "#F5F0E8",
-  ivory: "#FAF8F3",
-  sand: "#E8DDD0",
-  brown: "#2D1F14",
-  muted: "#8B7D6B",
-};
+const CORAL = "#EA9072";
+const DARK = "#0A0705";
+const CREAM = "#F5EDE4";
+const BROWN = "#1A0F08";
+const E = [0.16, 1, 0.3, 1];
 
-/* ─────────────────────────── ANIMATION VARIANTS ────────────────────── */
-const fadeUp = {
-  hidden: { opacity: 0, y: 44 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } },
-};
-const stagger = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.13, delayChildren: 0.05 } },
-};
-function useReveal(margin = "-100px 0px") {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin });
-  return [ref, inView];
-}
-
-/* ─────────────────────────── SHARED STYLE CONSTANTS ─────────────────── */
-const label = {
-  display: "block",
-  fontFamily: "'Jost', sans-serif",
-  fontSize: "0.65rem",
-  letterSpacing: "0.18em",
-  textTransform: "uppercase",
-  color: C.gold,
-  marginBottom: "7px",
-};
-const inputWrap = {
-  display: "flex",
-  alignItems: "center",
-  gap: "8px",
-  padding: "11px 14px",
-  background: "rgba(250,248,243,0.05)",
-  border: `1px solid rgba(201,169,110,0.22)`,
-  borderRadius: "4px",
-};
-const inputField = {
-  background: "transparent",
-  border: "none",
-  outline: "none",
-  color: "#FAF8F3",
-  fontFamily: "'Jost', sans-serif",
-  fontSize: "0.88rem",
-  width: "100%",
-  colorScheme: "dark",
-};
-const ctrBtn = {
-  background: "rgba(201,169,110,0.14)",
-  border: "none",
-  color: C.gold,
-  width: "22px",
-  height: "22px",
-  borderRadius: "2px",
-  cursor: "pointer",
-  fontSize: "1rem",
-  lineHeight: 1,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-};
-
-/* ════════════════════════════ NAVBAR ════════════════════════════════ */
-function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    const h = () => setScrolled(window.scrollY > 70);
-    window.addEventListener("scroll", h);
-    h();
-    return () => window.removeEventListener("scroll", h);
-  }, []);
-
-  const links = ["Villas", "Experiences", "Gallery", "Location", "Contact"];
-
-  return (
-    <motion.nav
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-      style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        padding: scrolled ? "12px 48px" : "26px 48px",
-        background: scrolled ? "rgba(26,26,24,0.96)" : "transparent",
-        backdropFilter: scrolled ? "blur(22px)" : "none",
-        borderBottom: scrolled ? `1px solid rgba(201,169,110,0.14)` : "none",
-        transition: "all 0.45s ease",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-      }}
-    >
-      <a href="#" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
-        <span style={{ display: "inline-block", width: 7, height: 7, borderRadius: "50%", background: C.gold, marginBottom: 1 }} />
-        <span style={{
-          fontFamily: "'Cormorant Garamond', serif", fontSize: "1.5rem",
-          fontWeight: 500, color: C.ivory, letterSpacing: "0.05em",
-        }}>Aureva Villas</span>
-      </a>
-
-      <div className="hidden md:flex" style={{ alignItems: "center", gap: "36px" }}>
-        {links.map(l => (
-          <a key={l} href={`#${l.toLowerCase()}`}
-            style={{
-              color: "rgba(250,248,243,0.68)", fontFamily: "'Jost', sans-serif",
-              fontSize: "0.78rem", fontWeight: 400, letterSpacing: "0.12em",
-              textDecoration: "none", textTransform: "uppercase", transition: "color 0.2s",
-            }}
-            onMouseEnter={e => (e.currentTarget.style.color = C.gold)}
-            onMouseLeave={e => (e.currentTarget.style.color = "rgba(250,248,243,0.68)")}
-          >{l}</a>
-        ))}
-        <motion.a href="#contact" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-          style={{
-            padding: "9px 24px",
-            border: `1px solid ${C.gold}`, color: C.gold,
-            fontFamily: "'Jost', sans-serif", fontSize: "0.76rem",
-            fontWeight: 500, letterSpacing: "0.12em", textDecoration: "none",
-            textTransform: "uppercase", borderRadius: "2px", transition: "all 0.3s",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = C.gold; e.currentTarget.style.color = C.charcoal; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.gold; }}
-        >Book Now</motion.a>
-      </div>
-
-      <button className="md:hidden" onClick={() => setOpen(!open)}
-        style={{ background: "none", border: "none", color: C.ivory, cursor: "pointer" }}>
-        {open ? <X size={24} /> : <Menu size={24} />}
-      </button>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}
-            style={{
-              position: "absolute", top: "100%", left: 0, right: 0,
-              background: "rgba(26,26,24,0.98)", backdropFilter: "blur(20px)",
-              padding: "24px 48px", display: "flex", flexDirection: "column", gap: "18px",
-            }}>
-            {links.map(l => (
-              <a key={l} href={`#${l.toLowerCase()}`} onClick={() => setOpen(false)}
-                style={{
-                  color: C.ivory, fontFamily: "'Jost', sans-serif", fontSize: "1rem",
-                  letterSpacing: "0.1em", textDecoration: "none", textTransform: "uppercase",
-                }}>{l}</a>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.nav>
-  );
-}
-
-/* ════════════════════════════ HERO ════════════════════════════════════ */
-function Hero() {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const imgY = useTransform(scrollYProgress, [0, 1], ["0%", "28%"]);
-  const textY = useTransform(scrollYProgress, [0, 1], ["0%", "14%"]);
-  const fadeOp = useTransform(scrollYProgress, [0, 0.65], [1, 0]);
-
-  return (
-    <section ref={ref} style={{ position: "relative", height: "100vh", overflow: "hidden" }}>
-      <motion.div style={{
-        position: "absolute", inset: "-20%", y: imgY,
-        backgroundImage: `url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920&q=80&auto=format&fit=crop')`,
-        backgroundSize: "cover", backgroundPosition: "center",
-      }} />
-      <div style={{
-        position: "absolute", inset: 0,
-        background: "linear-gradient(to bottom,rgba(26,26,24,0.38) 0%,rgba(26,26,24,0.52) 45%,rgba(26,26,24,0.88) 100%)",
-      }} />
-
-      <motion.div style={{
-        position: "relative", zIndex: 2, height: "100%",
-        display: "flex", flexDirection: "column", justifyContent: "center",
-        alignItems: "center", textAlign: "center", padding: "0 24px",
-        y: textY, opacity: fadeOp,
-      }}>
-        <motion.div initial={{ opacity: 0, y: 32 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.1, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}>
-          <p style={{
-            fontFamily: "'Jost', sans-serif", fontSize: "0.72rem",
-            letterSpacing: "0.32em", color: C.gold, textTransform: "uppercase", marginBottom: "24px",
-          }}>Mirissa Coast · Sri Lanka</p>
-
-          <h1 style={{
-            fontFamily: "'Cormorant Garamond', serif",
-            fontSize: "clamp(2.8rem,7.5vw,6.2rem)", fontWeight: 300,
-            color: C.ivory, lineHeight: 1.08, maxWidth: "820px",
-            margin: "0 auto 30px", letterSpacing: "-0.01em",
-          }}>
-            Escape to a Private<br />
-            <em style={{ fontStyle: "italic", color: C.goldLight }}>Coastal Sanctuary</em>
-          </h1>
-
-          <p style={{
-            fontFamily: "'Jost', sans-serif",
-            fontSize: "clamp(0.9rem,1.8vw,1.08rem)",
-            color: "rgba(250,248,243,0.66)", maxWidth: "560px",
-            margin: "0 auto 50px", lineHeight: 1.78, fontWeight: 300,
-          }}>
-            A boutique villa stay crafted for slow mornings, ocean air,
-            private pools, and unforgettable evenings.
-          </p>
-
-          <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
-            <motion.a href="#villas" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-              style={{
-                padding: "16px 42px", background: C.gold, color: C.charcoal,
-                fontFamily: "'Jost', sans-serif", fontSize: "0.78rem", fontWeight: 600,
-                letterSpacing: "0.16em", textTransform: "uppercase", textDecoration: "none",
-                borderRadius: "2px", display: "inline-block",
-              }}>Explore Villas</motion.a>
-            <motion.a href="https://wa.me/94771234567" target="_blank" rel="noreferrer"
-              whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-              style={{
-                padding: "16px 42px", background: "transparent",
-                border: "1px solid rgba(250,248,243,0.45)", color: C.ivory,
-                fontFamily: "'Jost', sans-serif", fontSize: "0.78rem", fontWeight: 400,
-                letterSpacing: "0.16em", textTransform: "uppercase", textDecoration: "none",
-                borderRadius: "2px", display: "flex", alignItems: "center", gap: "9px",
-              }}><MessageCircle size={15} />Book on WhatsApp</motion.a>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1, delay: 1.3, ease: [0.22, 1, 0.36, 1] }}
-          className="hidden md:block"
-          style={{
-            position: "absolute", right: "5%", bottom: "16%",
-            background: "rgba(26,26,24,0.68)", backdropFilter: "blur(24px)",
-            border: `1px solid rgba(201,169,110,0.32)`, borderRadius: "10px",
-            padding: "26px 30px", textAlign: "left",
-          }}
-        >
-          <p style={{
-            fontFamily: "'Cormorant Garamond', serif", fontSize: "1.55rem",
-            fontWeight: 500, color: C.gold, marginBottom: "14px",
-          }}>From Rs. 42,000
-            <span style={{ fontSize: "0.82rem", color: "rgba(250,248,243,0.48)", fontFamily: "'Jost', sans-serif", fontWeight: 300 }}> / night</span>
-          </p>
-          {["🏊  Private Pool", "🌊  Ocean View", "🛎  Concierge 24/7"].map(t => (
-            <p key={t} style={{
-              color: "rgba(250,248,243,0.76)", fontFamily: "'Jost', sans-serif",
-              fontSize: "0.78rem", letterSpacing: "0.05em", marginBottom: "7px",
-            }}>{t}</p>
-          ))}
-        </motion.div>
-      </motion.div>
-
-      <motion.div animate={{ y: [0, 9, 0] }} transition={{ duration: 2.2, repeat: Infinity }}
-        style={{
-          position: "absolute", bottom: "38px", left: "50%", transform: "translateX(-50%)",
-          zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: "7px",
-        }}>
-        <p style={{ color: "rgba(250,248,243,0.36)", fontFamily: "'Jost', sans-serif", fontSize: "0.6rem", letterSpacing: "0.22em", textTransform: "uppercase" }}>Scroll</p>
-        <div style={{ width: 1, height: 38, background: `linear-gradient(to bottom,rgba(201,169,110,0.55),transparent)` }} />
-      </motion.div>
-    </section>
-  );
-}
-
-/* ════════════════════════════ BOOKING BAR ═══════════════════════════ */
-function BookingBar() {
-  const [guests, setGuests] = useState(2);
-  const [villa, setVilla] = useState("");
-  return (
-    <div style={{
-      background: C.charcoal, position: "sticky", top: 0, zIndex: 80,
-      borderBottom: `1px solid rgba(201,169,110,0.12)`, padding: "18px 48px",
-    }}>
-      <div style={{
-        maxWidth: 1140, margin: "0 auto",
-        display: "flex", gap: "14px", alignItems: "flex-end", flexWrap: "wrap",
-      }}>
-        {[
-          { lbl: "Check-in", type: "date" },
-          { lbl: "Check-out", type: "date" },
-        ].map(f => (
-          <div key={f.lbl} style={{ flex: "1 1 130px" }}>
-            <label style={label}>{f.lbl}</label>
-            <div style={inputWrap}>
-              <Calendar size={13} color={C.gold} style={{ flexShrink: 0 }} />
-              <input type={f.type} style={inputField} />
-            </div>
-          </div>
-        ))}
-
-        <div style={{ flex: "1 1 130px" }}>
-          <label style={label}>Guests</label>
-          <div style={{ ...inputWrap, justifyContent: "space-between" }}>
-            <Users size={13} color={C.gold} style={{ flexShrink: 0 }} />
-            <span style={{ color: C.ivory, fontFamily: "'Jost', sans-serif", fontSize: "0.88rem", flex: 1, marginLeft: 8 }}>
-              {guests} Guest{guests !== 1 ? "s" : ""}
-            </span>
-            <div style={{ display: "flex", gap: "4px" }}>
-              <button style={ctrBtn} onClick={() => setGuests(Math.max(1, guests - 1))}>−</button>
-              <button style={ctrBtn} onClick={() => setGuests(Math.min(12, guests + 1))}>+</button>
-            </div>
-          </div>
-        </div>
-
-        <div style={{ flex: "1 1 160px" }}>
-          <label style={label}>Villa Type</label>
-          <div style={inputWrap}>
-            <Globe size={13} color={C.gold} style={{ flexShrink: 0 }} />
-            <select value={villa} onChange={e => setVilla(e.target.value)}
-              style={{ ...inputField, background: "transparent" }}>
-              <option value="">Any Villa</option>
-              <option>Ocean Pearl Suite</option>
-              <option>Garden Pool Villa</option>
-              <option>Sunset Residence</option>
-            </select>
-          </div>
-        </div>
-
-        <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-          style={{
-            padding: "13px 32px", background: C.gold, color: C.charcoal,
-            border: "none", borderRadius: "2px", fontFamily: "'Jost', sans-serif",
-            fontSize: "0.78rem", fontWeight: 600, letterSpacing: "0.13em",
-            textTransform: "uppercase", cursor: "pointer", whiteSpace: "nowrap",
-          }}>Check Availability</motion.button>
-      </div>
-    </div>
-  );
-}
-
-/* ════════════════════════════ ABOUT ═══════════════════════════════════ */
-function About() {
-  const [ref, inView] = useReveal();
-  return (
-    <section id="about" style={{ background: C.ivory, padding: "120px 48px" }}>
-      <div ref={ref} style={{ maxWidth: 1120, margin: "0 auto" }}>
-        <div className="grid md:grid-cols-2" style={{ gap: "88px", alignItems: "center" }}>
-          <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={stagger}>
-            <motion.p variants={fadeUp} style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", color: C.gold, textTransform: "uppercase", marginBottom: "20px" }}>Our Story</motion.p>
-            <motion.h2 variants={fadeUp} style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2rem,4vw,3.3rem)", fontWeight: 400, color: C.charcoal, lineHeight: 1.18, marginBottom: "28px" }}>
-              Where the Indian Ocean<br /><em>meets quiet luxury</em>
-            </motion.h2>
-            <motion.p variants={fadeUp} style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.98rem", color: C.muted, lineHeight: 1.9, marginBottom: "18px", fontWeight: 300 }}>
-              Aureva Villas was born from a simple belief — that a truly special stay should feel like coming home to a version of the world you've always wished existed. Set along the southern coast of Sri Lanka, our villas sit quietly between swaying palms and the ocean.
-            </motion.p>
-            <motion.p variants={fadeUp} style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.98rem", color: C.muted, lineHeight: 1.9, marginBottom: "52px", fontWeight: 300 }}>
-              Each villa is privately designed, locally built, and personally managed. No crowds, no rush — just the sound of the sea, a cold drink by your pool, and evenings that slip into the horizon.
-            </motion.p>
-            <motion.div variants={stagger} className="grid grid-cols-2" style={{ gap: "28px" }}>
-              {[
-                ["12", "Private Villas"],
-                ["4.9 ★", "Average Rating"],
-                ["2 min", "Walk to Beach"],
-                ["On request", "Private Chef"],
-              ].map(([num, lbl]) => (
-                <motion.div key={lbl} variants={fadeUp}>
-                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2.1rem", fontWeight: 500, color: C.charcoal, marginBottom: "5px" }}>{num}</p>
-                  <p style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.72rem", color: C.muted, letterSpacing: "0.09em", textTransform: "uppercase" }}>{lbl}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 44 }} animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
-            style={{ position: "relative" }}>
-            <img src="https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=600&q=80"
-              alt="Villa pool" style={{ width: "82%", borderRadius: "8px", display: "block", boxShadow: "0 32px 80px rgba(26,26,24,0.14)" }} />
-            <img src="https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=400&q=80"
-              alt="Villa terrace" style={{
-                width: "54%", borderRadius: "8px", position: "absolute",
-                bottom: "-44px", right: 0, boxShadow: "0 22px 64px rgba(26,26,24,0.18)",
-                border: `6px solid ${C.ivory}`,
-              }} />
-          </motion.div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ════════════════════════════ VILLAS ══════════════════════════════════ */
-const VILLAS = [
+const BURGERS = [
   {
-    name: "Ocean Pearl Suite",
-    img: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80&auto=format&fit=crop",
-    price: "Rs. 68,000", guests: 4, beds: 2,
-    tags: ["Private Pool", "Ocean View", "King Bed"],
-    desc: "A generous two-bedroom suite elevated above the treeline, with a wraparound terrace that frames the horizon perfectly. Mornings here taste of sea salt and good coffee.",
+    name: "The Smokehouse",
+    type: "Signature Beef",
+    price: "Rs. 1,450",
+    heat: "Medium",
+    desc: "Double smashed beef, aged cheddar, caramelised onion, smoked mayo on toasted brioche. The one that made us regulars.",
+    img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1200&q=90",
+    no: "01",
   },
   {
-    name: "Garden Pool Villa",
-    img: "https://images.unsplash.com/photo-1602343168117-bb8ffe3e2e9f?w=800&q=80",
-    price: "Rs. 42,000", guests: 2, beds: 1,
-    tags: ["Plunge Pool", "Garden", "Open Bathroom"],
-    desc: "Tucked into a quiet corner of the estate, this villa is all about intimacy. The open-air bathroom, tropical garden, and private plunge pool make it impossible to leave.",
+    name: "Crispy Clucker",
+    type: "Fried Chicken",
+    price: "Rs. 1,250",
+    heat: "Hot",
+    desc: "Buttermilk fried chicken thigh, pickles, slaw, honey-chilli glaze, garlic aioli. Crispy even after delivery.",
+    img: "https://images.unsplash.com/photo-1615297928064-24977384d0da?auto=format&fit=crop&w=1200&q=90",
+    no: "02",
   },
   {
-    name: "Sunset Residence",
-    img: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=80",
-    price: "Rs. 95,000", guests: 6, beds: 3,
-    tags: ["Infinity Pool", "Full Kitchen", "Event Space"],
-    desc: "Our most sought-after villa. Three bedrooms, a full kitchen, and an infinity pool that seems to pour straight into the sea. Best experienced with people you love.",
+    name: "Midnight Melt",
+    type: "Cheese Loaded",
+    price: "Rs. 1,590",
+    heat: "Mild",
+    desc: "Beef patty, triple cheese pull, grilled mushrooms, black pepper sauce, crispy onion rings. Dangerous after dark.",
+    img: "https://images.unsplash.com/photo-1550317138-10000687a72b?auto=format&fit=crop&w=1200&q=90",
+    no: "03",
+  },
+  {
+    name: "Green Beast",
+    type: "Plant-based",
+    price: "Rs. 1,050",
+    heat: "Fresh",
+    desc: "Crispy veggie patty, avocado herb sauce, fresh lettuce, tomato, charred onion relish. Doesn't apologise for being veggie.",
+    img: "https://images.unsplash.com/photo-1520072959219-c595dc870360?auto=format&fit=crop&w=1200&q=90",
+    no: "04",
   },
 ];
 
-function VillaCard({ v, delay, inView }) {
-  const [hov, setHov] = useState(false);
+const STEPS = [
+  {
+    n: "01",
+    title: "Cold patty, hot grill",
+    body: "Each beef patty hits a scorching surface and gets pressed hard. Crispy edges. Juicy centre. Real crust — not microwaved brown.",
+  },
+  {
+    n: "02",
+    title: "Sauces made in-house",
+    body: "Smoked mayo, garlic aioli, pepper sauce, honey-chilli glaze — mixed fresh daily. Nothing here comes from a commercial bottle.",
+  },
+  {
+    n: "03",
+    title: "Built only after you order",
+    body: "No burgers waiting around. Your order triggers the build. Bun toasted, cheese melted, stacked, wrapped, yours.",
+  },
+  {
+    n: "04",
+    title: "Hot in your hand",
+    body: "Walk in, WhatsApp ahead for pickup, or get hot delivery for office lunches and group orders. 12 minutes average.",
+  },
+];
+
+const REVIEWS = [
+  {
+    q: "The Smokehouse is the messiest and best thing I've eaten in Colombo. That patty crust was unreal.",
+    name: "Naveen R.",
+    sub: "Food writer",
+  },
+  {
+    q: "Ordered the Clucker for delivery and it arrived crispy. That almost never happens. Sauce is genuinely great.",
+    name: "Kavindi S.",
+    sub: "Regular",
+  },
+  {
+    q: "Big portions, proper flavour, and they actually reply fast on WhatsApp. That combination is rare.",
+    name: "Dilan M.",
+    sub: "Office lunch organiser",
+  },
+];
+
+const GALLERY = [
+  {
+    img: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?auto=format&fit=crop&w=1400&q=90",
+    label: "The grill",
+  },
+  {
+    img: "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=900&q=90",
+    label: "Stacked",
+  },
+  {
+    img: "https://images.unsplash.com/photo-1561758033-d89a9ad46330?auto=format&fit=crop&w=900&q=90",
+    label: "Sides",
+  },
+  {
+    img: "https://images.unsplash.com/photo-1607013251379-e6eecfffe234?auto=format&fit=crop&w=1400&q=90",
+    label: "Late night",
+  },
+];
+
+function useReveal(opts = {}) {
+  const ref = useRef(null);
+  const seen = useInView(ref, { once: true, margin: "-80px", ...opts });
+  return { ref, seen };
+}
+
+function FadeUp({ children, delay = 0, className = "", from = { opacity: 0, y: 48 }, opts = {} }) {
+  const { ref, seen } = useReveal(opts);
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 44 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.75, delay, ease: [0.22, 1, 0.36, 1] }}
-      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{
-        background: C.ivory, borderRadius: "12px", overflow: "hidden",
-        border: `1px solid ${hov ? "rgba(201,169,110,0.5)" : "transparent"}`,
-        boxShadow: hov ? "0 32px 80px rgba(26,26,24,0.14),0 0 0 1px rgba(201,169,110,0.28)" : "0 8px 32px rgba(26,26,24,0.06)",
-        transform: hov ? "translateY(-8px)" : "translateY(0)",
-        transition: "all 0.45s cubic-bezier(0.22,1,0.36,1)",
-      }}>
-      <div style={{ overflow: "hidden", height: "264px", position: "relative" }}>
-        <img src={v.img} alt={v.name} style={{
-          width: "100%", height: "100%", objectFit: "cover",
-          transform: hov ? "scale(1.09)" : "scale(1)",
-          transition: "transform 0.85s cubic-bezier(0.22,1,0.36,1)",
-        }} />
-        <div style={{
-          position: "absolute", top: "16px", right: "16px",
-          background: "rgba(26,26,24,0.62)", backdropFilter: "blur(14px)",
-          padding: "6px 14px", borderRadius: "20px",
-          color: C.gold, fontFamily: "'Cormorant Garamond', serif", fontSize: "1.05rem", fontWeight: 500,
-        }}>
-          {v.price}<span style={{ fontSize: "0.68rem", color: "rgba(250,248,243,0.55)", fontFamily: "'Jost', sans-serif", fontWeight: 300 }}>/night</span>
-        </div>
-      </div>
-      <div style={{ padding: "28px 28px 30px" }}>
-        <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.55rem", fontWeight: 500, color: C.charcoal, marginBottom: "13px" }}>{v.name}</h3>
-        <div style={{ display: "flex", gap: "20px", marginBottom: "15px" }}>
-          <span style={{ display: "flex", alignItems: "center", gap: "5px", color: C.muted, fontFamily: "'Jost', sans-serif", fontSize: "0.79rem" }}><Users size={12} /> {v.guests} guests</span>
-          <span style={{ display: "flex", alignItems: "center", gap: "5px", color: C.muted, fontFamily: "'Jost', sans-serif", fontSize: "0.79rem" }}><Bed size={12} /> {v.beds} bed{v.beds > 1 ? "s" : ""}</span>
-        </div>
-        <div style={{ display: "flex", gap: "7px", flexWrap: "wrap", marginBottom: "18px" }}>
-          {v.tags.map(t => (
-            <span key={t} style={{
-              padding: "4px 12px", background: "rgba(201,169,110,0.09)",
-              border: "1px solid rgba(201,169,110,0.28)", borderRadius: "20px",
-              color: C.muted, fontFamily: "'Jost', sans-serif", fontSize: "0.68rem", letterSpacing: "0.06em",
-            }}>{t}</span>
-          ))}
-        </div>
-        <p style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.87rem", color: C.muted, lineHeight: 1.73, marginBottom: "26px", fontWeight: 300 }}>{v.desc}</p>
-        <div style={{ display: "flex", gap: "12px" }}>
-          <button style={{
-            flex: 1, padding: "11px", border: `1px solid ${C.charcoal}`,
-            background: "transparent", color: C.charcoal,
-            fontFamily: "'Jost', sans-serif", fontSize: "0.73rem",
-            letterSpacing: "0.1em", textTransform: "uppercase", borderRadius: "2px", cursor: "pointer",
-          }}>View Details</button>
-          <button style={{
-            flex: 1, padding: "11px", background: C.charcoal, border: "none",
-            color: C.gold, fontFamily: "'Jost', sans-serif", fontSize: "0.73rem",
-            letterSpacing: "0.1em", textTransform: "uppercase", borderRadius: "2px", cursor: "pointer",
-          }}>Book Now</button>
-        </div>
-      </div>
+      ref={ref}
+      initial={from}
+      animate={seen ? { opacity: 1, y: 0, x: 0 } : from}
+      transition={{ duration: 1.05, delay, ease: E }}
+      className={className}
+    >
+      {children}
     </motion.div>
   );
 }
 
-function Villas() {
-  const [ref, inView] = useReveal();
+const Grain = () => (
+  <div
+    className="pointer-events-none fixed inset-0 z-[60] opacity-[0.03]"
+    style={{
+      backgroundImage:
+        'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")',
+      backgroundRepeat: "repeat",
+      backgroundSize: "200px",
+    }}
+  />
+);
+
+export default function App() {
+  const { scrollYProgress } = useScroll();
+  const [mouse, setMouse] = useState({ x: -999, y: -999 });
+  const [activeMenu, setActiveMenu] = useState(0);
+
+  const cursorX = useSpring(mouse.x, { stiffness: 110, damping: 22 });
+  const cursorY = useSpring(mouse.y, { stiffness: 110, damping: 22 });
+
+  const heroTextY = useTransform(scrollYProgress, [0, 0.4], [0, -60]);
+  const heroImgY = useTransform(scrollYProgress, [0, 0.4], [0, -90]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
+
+  useEffect(() => {
+    const fn = (e) => setMouse({ x: e.clientX, y: e.clientY });
+    window.addEventListener("mousemove", fn);
+    return () => window.removeEventListener("mousemove", fn);
+  }, []);
+
+  const statsRef = useRef(null);
+  const storyRef = useRef(null);
+  const processRef = useRef(null);
+  const reviewRef = useRef(null);
+  const visitRef = useRef(null);
+  const galleryRef = useRef(null);
+
+  const statsIn = useInView(statsRef, { once: true, margin: "-60px" });
+  const storyIn = useInView(storyRef, { once: true, margin: "-80px" });
+  const processIn = useInView(processRef, { once: true, margin: "-60px" });
+  const reviewIn = useInView(reviewRef, { once: true, margin: "-60px" });
+  const visitIn = useInView(visitRef, { once: true, margin: "-60px" });
+  const galleryIn = useInView(galleryRef, { once: true, margin: "-60px" });
+
   return (
-    <section id="villas" style={{ background: C.beige, padding: "120px 48px" }}>
-      <div ref={ref} style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={stagger}
-          style={{ textAlign: "center", marginBottom: "76px" }}>
-          <motion.p variants={fadeUp} style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", color: C.gold, textTransform: "uppercase", marginBottom: "16px" }}>Our Collection</motion.p>
-          <motion.h2 variants={fadeUp} style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2rem,4vw,3.6rem)", fontWeight: 400, color: C.charcoal, lineHeight: 1.15 }}>
-            Villas for every kind of stay
-          </motion.h2>
-        </motion.div>
-        <div className="grid md:grid-cols-3" style={{ gap: "32px" }}>
-          {VILLAS.map((v, i) => <VillaCard key={v.name} v={v} delay={i * 0.14} inView={inView} />)}
-        </div>
+    <div
+      style={{ fontFamily: "'Manrope', sans-serif", background: DARK }}
+      className="relative min-h-screen overflow-x-hidden text-white selection:bg-[#EA9072] selection:text-black"
+    >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700;800&display=swap');
+
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Manrope', sans-serif; letter-spacing: -0.01em; }
+        h1, h2, h3, .display-font {
+          font-family: 'Sora', sans-serif;
+          font-feature-settings: 'kern' 1, 'liga' 1;
+          text-rendering: geometricPrecision;
+        }
+        p { text-wrap: pretty; }
+        ::selection { background: #EA9072; color: #000; }
+
+        .luxury-cta {
+          position: relative;
+          isolation: isolate;
+          overflow: hidden;
+          transition: transform .45s cubic-bezier(.16,1,.3,1), box-shadow .45s cubic-bezier(.16,1,.3,1), opacity .3s ease;
+        }
+        .luxury-cta::after {
+          content: '';
+          position: absolute;
+          inset: -60% -40%;
+          z-index: -1;
+          background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.45) 50%, transparent 70%);
+          transform: translateX(-140%) rotate(8deg);
+          transition: transform .95s cubic-bezier(.16,1,.3,1);
+        }
+        .luxury-cta:hover::after { transform: translateX(140%) rotate(8deg); }
+
+        .luxury-card {
+          transform: translateZ(0);
+          backface-visibility: hidden;
+          box-shadow: 0 28px 90px -62px rgba(0,0,0,.75);
+          transition: transform .55s cubic-bezier(.16,1,.3,1), border-color .55s cubic-bezier(.16,1,.3,1), box-shadow .55s cubic-bezier(.16,1,.3,1), background-color .55s cubic-bezier(.16,1,.3,1);
+        }
+        .luxury-card:hover { box-shadow: 0 38px 110px -58px rgba(234,144,114,.34); }
+        .soft-copy { line-height: 1.78; letter-spacing: -0.01em; }
+        .micro-title { letter-spacing: .28em; }
+      `}</style>
+
+      <Grain />
+
+      <motion.div
+        className="pointer-events-none fixed z-[55] hidden rounded-full mix-blend-difference md:block"
+        style={{ left: cursorX, top: cursorY, x: "-50%", y: "-50%", width: 14, height: 14, background: "white" }}
+      />
+      <motion.div
+        className="pointer-events-none fixed z-[54] hidden rounded-full border border-white/30 md:block"
+        style={{ left: cursorX, top: cursorY, x: "-50%", y: "-50%", width: 44, height: 44 }}
+      />
+
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <motion.div
+          animate={{ scale: [1, 1.25, 1], opacity: [0.2, 0.36, 0.2] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute left-[12%] top-[8%] h-[500px] w-[500px] rounded-full blur-3xl"
+          style={{ background: "radial-gradient(circle, rgba(234,144,114,0.26) 0%, transparent 70%)" }}
+        />
+        <motion.div
+          animate={{ scale: [1, 1.18, 1], opacity: [0.12, 0.25, 0.12] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 5 }}
+          className="absolute bottom-[20%] right-[10%] h-[400px] w-[400px] rounded-full blur-3xl"
+          style={{ background: "radial-gradient(circle, rgba(255,200,100,0.18) 0%, transparent 70%)" }}
+        />
       </div>
-    </section>
-  );
-}
 
-/* ════════════════════════════ AMENITIES ══════════════════════════════ */
-const AMENITIES = [
-  { icon: Waves, lbl: "Private Infinity Pool", desc: "Each villa has its own pool. No sharing, ever." },
-  { icon: Sun, lbl: "Ocean View Terrace", desc: "Sunrise to sunset, the view is entirely yours." },
-  { icon: UtensilsCrossed, lbl: "Private Chef", desc: "Available on request, with a locally sourced menu." },
-  { icon: Car, lbl: "Airport Pickup", desc: "Seamless private transfers, door to door." },
-  { icon: Sparkles, lbl: "Spa Treatments", desc: "In-villa Ayurvedic and deep-tissue therapies." },
-  { icon: Wifi, lbl: "High-Speed WiFi", desc: "100 Mbps throughout all villa spaces." },
-  { icon: Coffee, lbl: "Breakfast Included", desc: "Fresh tropical breakfast delivered every morning." },
-  { icon: Clock, lbl: "24 / 7 Concierge", desc: "A real person. Always available, never scripted." },
-];
+      <motion.nav
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.9, ease: E }}
+        className="fixed left-0 right-0 top-0 z-40 flex items-center justify-between px-6 py-5 md:px-10"
+      >
+        <div
+          className="absolute inset-0 backdrop-blur-2xl"
+          style={{ background: "rgba(10,7,5,0.72)", maskImage: "linear-gradient(to bottom, black 80%, transparent)" }}
+        />
 
-function Amenities() {
-  const [ref, inView] = useReveal();
-  return (
-    <section style={{ background: C.charcoal, padding: "120px 48px" }}>
-      <div ref={ref} style={{ maxWidth: 1120, margin: "0 auto" }}>
-        <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={stagger}
-          style={{ textAlign: "center", marginBottom: "76px" }}>
-          <motion.p variants={fadeUp} style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", color: C.gold, textTransform: "uppercase", marginBottom: "16px" }}>Included in Every Stay</motion.p>
-          <motion.h2 variants={fadeUp} style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2rem,4vw,3.6rem)", fontWeight: 400, color: C.ivory, lineHeight: 1.15 }}>
-            Everything you need.<br />
-            <em style={{ color: C.goldLight }}>Nothing you don't.</em>
-          </motion.h2>
-        </motion.div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4" style={{ gap: "22px" }}>
-          {AMENITIES.map(({ icon: Icon, lbl, desc }, i) => (
-            <motion.div key={lbl}
-              initial={{ opacity: 0, y: 32 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] }}
-              whileHover={{ y: -5, backgroundColor: "rgba(201,169,110,0.07)", borderColor: "rgba(201,169,110,0.3)" }}
-              style={{
-                padding: "32px 24px", background: "rgba(250,248,243,0.04)",
-                border: "1px solid rgba(201,169,110,0.11)", borderRadius: "8px", transition: "all 0.3s",
-              }}>
-              <div style={{
-                width: 44, height: 44, borderRadius: "50%", background: "rgba(201,169,110,0.12)",
-                display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px",
-              }}><Icon size={18} color={C.gold} /></div>
-              <h3 style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.88rem", fontWeight: 500, color: C.ivory, marginBottom: "9px", letterSpacing: "0.02em" }}>{lbl}</h3>
-              <p style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.79rem", color: "rgba(250,248,243,0.42)", lineHeight: 1.65, fontWeight: 300 }}>{desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ════════════════════════════ EXPERIENCES ════════════════════════════ */
-const EXPERIENCES = [
-  { title: "Sunrise Breakfast", sub: "On your private terrace", img: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=700&q=80" },
-  { title: "Candlelit Dinner", sub: "Private beachfront setting", img: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=700&q=80" },
-  { title: "Lagoon Kayaking", sub: "Guided morning expedition", img: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=700&q=80" },
-  { title: "In-Villa Spa", sub: "Ayurvedic & deep tissue", img: "https://images.unsplash.com/photo-1519415510236-718bdfcd89c8?w=700&q=80" },
-  { title: "Beach Picnic", sub: "Curated hamper, your spot", img: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=700&q=80" },
-  { title: "Cultural Tour", sub: "Galle Fort & spice trails", img: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=700&q=80" },
-];
-
-function Experiences() {
-  const [ref, inView] = useReveal();
-  return (
-    <section id="experiences" style={{ background: C.ivory, padding: "120px 48px" }}>
-      <div ref={ref} style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={stagger}
-          style={{ textAlign: "center", marginBottom: "76px" }}>
-          <motion.p variants={fadeUp} style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", color: C.gold, textTransform: "uppercase", marginBottom: "16px" }}>Curated For You</motion.p>
-          <motion.h2 variants={fadeUp} style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2rem,4vw,3.6rem)", fontWeight: 400, color: C.charcoal, lineHeight: 1.15 }}>
-            Moments that stay with you
-          </motion.h2>
-        </motion.div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3" style={{ gap: "22px" }}>
-          {EXPERIENCES.map((e, i) => (
-            <motion.div key={e.title}
-              initial={{ opacity: 0, y: 32 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.7, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-              whileHover="hover"
-              style={{ borderRadius: "10px", overflow: "hidden", position: "relative", height: "320px", cursor: "pointer" }}>
-              <motion.img src={e.img} alt={e.title}
-                variants={{ hover: { scale: 1.08 } }} transition={{ duration: 0.65 }}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(26,26,24,0.82) 0%,rgba(26,26,24,0.08) 62%)" }} />
-              <div style={{ position: "absolute", bottom: "28px", left: "28px" }}>
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.4rem", fontWeight: 500, color: C.ivory, marginBottom: "5px" }}>{e.title}</p>
-                <p style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.72rem", color: C.gold, letterSpacing: "0.12em" }}>{e.sub}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ════════════════════════════ GALLERY ════════════════════════════════ */
-const GALLERY = [
-  { src: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=900&q=80&auto=format&fit=crop", cap: "The pool deck", h: "380px" },
-  { src: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&q=80&auto=format&fit=crop", cap: "Morning light", h: "280px" },
-  { src: "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=600&q=80", cap: "Ocean terrace", h: "280px" },
-  { src: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=900&q=80", cap: "Private dining", h: "380px" },
-  { src: "https://images.unsplash.com/photo-1602343168117-bb8ffe3e2e9f?w=600&q=80", cap: "Garden suite", h: "280px" },
-  { src: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=600&q=80", cap: "Sunset hour", h: "280px" },
-];
-
-function Gallery() {
-  const [ref, inView] = useReveal();
-  return (
-    <section id="gallery" style={{ background: C.beige, padding: "120px 48px" }}>
-      <div ref={ref} style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={stagger}
-          style={{ textAlign: "center", marginBottom: "76px" }}>
-          <motion.p variants={fadeUp} style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", color: C.gold, textTransform: "uppercase", marginBottom: "16px" }}>Visual Stories</motion.p>
-          <motion.h2 variants={fadeUp} style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2rem,4vw,3.6rem)", fontWeight: 400, color: C.charcoal }}>A glimpse inside Aureva</motion.h2>
-        </motion.div>
-        <div className="grid grid-cols-2 md:grid-cols-3" style={{ gap: "16px" }}>
-          {GALLERY.map((g, i) => (
-            <motion.div key={g.cap}
-              initial={{ opacity: 0, y: 20 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.65, delay: i * 0.09, ease: [0.22, 1, 0.36, 1] }}
-              whileHover="hover"
-              style={{ borderRadius: "10px", overflow: "hidden", position: "relative", height: g.h, cursor: "pointer" }}>
-              <motion.img src={g.src} alt={g.cap}
-                variants={{ hover: { scale: 1.07 } }} transition={{ duration: 0.55 }}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              <motion.div
-                initial={{ opacity: 0 }} variants={{ hover: { opacity: 1 } }}
-                style={{
-                  position: "absolute", inset: 0, background: "rgba(26,26,24,0.38)",
-                  display: "flex", alignItems: "flex-end", padding: "20px",
-                }}>
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "0.98rem", color: C.ivory, fontStyle: "italic" }}>{g.cap}</p>
-              </motion.div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ════════════════════════════ REVIEWS ═══════════════════════════════ */
-const REVIEWS = [
-  {
-    name: "Camille & James", from: "Paris, France", stars: 5, stay: "Sunset Residence · 7 nights",
-    text: "The villa was quiet, private, and beautifully kept. We spent most evenings by the pool watching the sky change colour. Nothing felt rushed. The team knew exactly when to appear and when to leave you to it.",
-  },
-  {
-    name: "Rohan Mehta", from: "Mumbai, India", stars: 5, stay: "Ocean Pearl Suite · 4 nights",
-    text: "I've stayed at a few high-end resorts in Sri Lanka but Aureva is different. It feels like your own home — just cleaner and with better views. The private chef was the real highlight.",
-  },
-  {
-    name: "Sarah Lin", from: "Singapore", stars: 5, stay: "Garden Pool Villa · 5 nights",
-    text: "We came for a long weekend and ended up extending by three days. The Garden Villa felt designed for us. The breakfast, the outdoor shower, the little details — all done with genuine care.",
-  },
-];
-
-function Reviews() {
-  const [ref, inView] = useReveal();
-  return (
-    <section style={{ background: C.charcoal, padding: "120px 48px" }}>
-      <div ref={ref} style={{ maxWidth: 1120, margin: "0 auto" }}>
-        <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={stagger}
-          style={{ textAlign: "center", marginBottom: "76px" }}>
-          <motion.p variants={fadeUp} style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", color: C.gold, textTransform: "uppercase", marginBottom: "16px" }}>Guest Words</motion.p>
-          <motion.h2 variants={fadeUp} style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2rem,4vw,3.6rem)", fontWeight: 400, color: C.ivory }}>What they said</motion.h2>
-        </motion.div>
-        <div className="grid md:grid-cols-3" style={{ gap: "26px" }}>
-          {REVIEWS.map((r, i) => (
-            <motion.div key={r.name}
-              initial={{ opacity: 0, y: 32 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.75, delay: i * 0.14, ease: [0.22, 1, 0.36, 1] }}
-              style={{
-                padding: "36px 32px", background: "rgba(250,248,243,0.04)",
-                border: "1px solid rgba(201,169,110,0.11)", borderRadius: "10px",
-              }}>
-              <div style={{ display: "flex", gap: "4px", marginBottom: "20px" }}>
-                {Array.from({ length: r.stars }).map((_, j) => <Star key={j} size={13} fill={C.gold} color={C.gold} />)}
-              </div>
-              <p style={{
-                fontFamily: "'Cormorant Garamond', serif", fontSize: "1.1rem",
-                color: "rgba(250,248,243,0.84)", lineHeight: 1.82,
-                fontStyle: "italic", marginBottom: "28px", fontWeight: 400,
-              }}>"{r.text}"</p>
-              <div style={{ borderTop: "1px solid rgba(201,169,110,0.14)", paddingTop: "20px" }}>
-                <p style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.88rem", color: C.ivory, fontWeight: 500, marginBottom: "3px" }}>{r.name}</p>
-                <p style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.74rem", color: "rgba(250,248,243,0.38)", letterSpacing: "0.06em" }}>{r.from}</p>
-                <p style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.7rem", color: C.gold, letterSpacing: "0.06em", marginTop: "7px" }}>{r.stay}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ════════════════════════════ LOCATION ══════════════════════════════ */
-function Location() {
-  const [ref, inView] = useReveal();
-  return (
-    <section id="location" style={{ background: C.ivory, padding: "120px 48px" }}>
-      <div ref={ref} style={{ maxWidth: 1120, margin: "0 auto" }}>
-        <div className="grid md:grid-cols-2" style={{ gap: "88px", alignItems: "center" }}>
-          <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={stagger}>
-            <motion.p variants={fadeUp} style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", color: C.gold, textTransform: "uppercase", marginBottom: "20px" }}>Where to Find Us</motion.p>
-            <motion.h2 variants={fadeUp} style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 400, color: C.charcoal, marginBottom: "24px", lineHeight: 1.2 }}>
-              Mirissa Coast,<br />Southern Sri Lanka
-            </motion.h2>
-            <motion.p variants={fadeUp} style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.96rem", color: C.muted, lineHeight: 1.9, marginBottom: "42px", fontWeight: 300 }}>
-              Nestled between the whale-watching town of Mirissa and the colonial beauty of Galle, Aureva Villas sits in a quiet pocket of the southern coast — close enough to explore, private enough to disappear.
-            </motion.p>
-            <motion.div variants={stagger} style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "44px" }}>
-              {[
-                [Waves, "2 min walk to the beach"],
-                [MapPin, "18 min drive to Mirissa town"],
-                [Car, "45 min to airport transfer point"],
-              ].map(([Icon, txt]) => (
-                <motion.div key={txt} variants={fadeUp} style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-                  <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(201,169,110,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Icon size={13} color={C.gold} />
-                  </div>
-                  <p style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.9rem", color: C.charcoal }}>{txt}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-            <motion.a variants={fadeUp} href="https://maps.google.com" target="_blank" rel="noreferrer"
-              whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: "9px",
-                padding: "14px 32px", background: C.charcoal, color: C.gold,
-                fontFamily: "'Jost', sans-serif", fontSize: "0.78rem", fontWeight: 500,
-                letterSpacing: "0.13em", textTransform: "uppercase", textDecoration: "none", borderRadius: "2px",
-              }}><MapPin size={13} />Get Directions</motion.a>
-          </motion.div>
-
+        <a href="#top" className="relative z-10 flex items-center gap-3">
           <motion.div
-            initial={{ opacity: 0, x: 44 }} animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
-            style={{ height: "460px", borderRadius: "12px", overflow: "hidden", position: "relative", boxShadow: "0 22px 64px rgba(26,26,24,0.12)" }}>
-            <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900&q=80&auto=format&fit=crop"
-              alt="Southern Sri Lanka coast" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.65 }} />
-            <div style={{
-              position: "absolute", inset: 0, display: "flex",
-              alignItems: "center", justifyContent: "center",
-            }}>
-              <div style={{
-                background: "rgba(26,26,24,0.7)", backdropFilter: "blur(18px)",
-                border: `1px solid rgba(201,169,110,0.3)`, borderRadius: "8px",
-                padding: "22px 32px", textAlign: "center",
-              }}>
-                <MapPin size={24} color={C.gold} style={{ display: "block", margin: "0 auto 9px" }} />
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.15rem", color: C.ivory, marginBottom: "5px" }}>Aureva Villas</p>
-                <p style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.73rem", color: "rgba(250,248,243,0.48)" }}>Mirissa · Galle Coast, Sri Lanka</p>
-              </div>
-            </div>
+            whileHover={{ rotate: 15, scale: 1.1 }}
+            transition={{ type: "spring", stiffness: 300 }}
+            className="grid h-10 w-10 place-items-center rounded-full text-black shadow-lg"
+            style={{ background: `linear-gradient(135deg, ${CORAL}, #f5b98e)` }}
+          >
+            <Flame className="h-4 w-4" />
           </motion.div>
+          <div>
+            <span className="block font-black leading-none tracking-tight">Ember Bun</span>
+            <span className="micro-title block text-[9px] uppercase text-white/40">Burger House</span>
+          </div>
+        </a>
+
+        <div className="relative z-10 hidden items-center gap-10 text-xs font-bold uppercase tracking-[0.25em] text-white/45 md:flex">
+          {["story", "menu", "process", "gallery", "visit"].map((l) => (
+            <a
+              key={l}
+              href={`#${l}`}
+              className="capitalize transition duration-300 hover:text-white"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = CORAL;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "";
+              }}
+            >
+              {l}
+            </a>
+          ))}
         </div>
-      </div>
-    </section>
-  );
-}
 
-/* ════════════════════════════ BOOKING FORM ══════════════════════════ */
-function BookingForm() {
-  const [ref, inView] = useReveal();
-  const [done, setDone] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", phone: "", checkin: "", checkout: "", guests: "", message: "" });
-  const onChange = e => setForm(p => ({ ...p, [e.target.name]: e.target.value }));
+        <motion.a
+          href="https://wa.me/94706857171"
+          target="_blank"
+          rel="noreferrer"
+          whileHover={{ scale: 1.06, y: -2 }}
+          whileTap={{ scale: 0.95 }}
+          className="luxury-cta relative z-10 inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-black text-black"
+          style={{ background: `linear-gradient(135deg, ${CORAL}, #f0b080)` }}
+        >
+          <MessageCircle className="h-4 w-4" /> Order
+        </motion.a>
+      </motion.nav>
 
-  return (
-    <section id="contact" style={{ background: C.beige, padding: "120px 48px" }}>
-      <div ref={ref} style={{ maxWidth: 880, margin: "0 auto" }}>
-        <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={stagger}
-          style={{ textAlign: "center", marginBottom: "66px" }}>
-          <motion.p variants={fadeUp} style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", color: C.gold, textTransform: "uppercase", marginBottom: "16px" }}>Reserve Your Stay</motion.p>
-          <motion.h2 variants={fadeUp} style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2rem,4vw,3.6rem)", fontWeight: 400, color: C.charcoal }}>Plan your visit</motion.h2>
+      <section id="top" className="relative min-h-screen overflow-hidden">
+        <motion.div style={{ y: heroImgY }} className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=2000&q=90"
+            alt="Ember Bun hero"
+            className="h-full w-full object-cover object-center"
+            style={{ filter: "brightness(0.38) saturate(1.1)" }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{ background: "linear-gradient(180deg, rgba(10,7,5,0.2) 0%, rgba(10,7,5,0.1) 40%, rgba(10,7,5,0.95) 100%)" }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{ background: "radial-gradient(ellipse at 60% 50%, rgba(234,144,114,0.12) 0%, transparent 65%)" }}
+          />
         </motion.div>
 
-        <AnimatePresence mode="wait">
-          {done ? (
-            <motion.div key="done" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
-              style={{ textAlign: "center", padding: "80px 40px", background: C.ivory, borderRadius: "12px", border: `1px solid rgba(201,169,110,0.28)` }}>
-              <div style={{ width: 62, height: 62, borderRadius: "50%", background: "rgba(201,169,110,0.14)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
-                <Sparkles size={26} color={C.gold} />
-              </div>
-              <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2rem", color: C.charcoal, marginBottom: "13px" }}>Request Received</h3>
-              <p style={{ fontFamily: "'Jost', sans-serif", color: C.muted, lineHeight: 1.75, maxWidth: 440, margin: "0 auto" }}>
-                Thank you, {form.name || "there"}. We'll be in touch within a few hours to confirm your booking details and answer any questions.
-              </p>
+        <motion.div
+          style={{ y: heroTextY, opacity: heroOpacity }}
+          className="relative z-10 flex min-h-screen flex-col justify-end px-6 pb-24 md:px-14 md:pb-36"
+        >
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.4 }}
+            className="absolute left-1/2 top-28 -translate-x-1/2 flex flex-col items-center gap-2 text-white/30"
+          >
+            <span className="micro-title text-[10px] uppercase">Scroll</span>
+            <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.7, repeat: Infinity }}>
+              <ChevronDown className="h-4 w-4" />
             </motion.div>
-          ) : (
-            <motion.div key="form" initial={{ opacity: 0, y: 20 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-              style={{ background: C.ivory, borderRadius: "12px", padding: "52px", border: `1px solid rgba(201,169,110,0.18)`, boxShadow: "0 20px 60px rgba(26,26,24,0.05)" }}>
-              <div className="grid md:grid-cols-2" style={{ gap: "18px", marginBottom: "18px" }}>
-                {[
-                  { name: "name", label: "Full Name", type: "text", placeholder: "Your full name" },
-                  { name: "email", label: "Email Address", type: "email", placeholder: "your@email.com" },
-                  { name: "phone", label: "Phone / WhatsApp", type: "tel", placeholder: "+94 77 XXX XXXX" },
-                  { name: "guests", label: "Number of Guests", type: "number", placeholder: "2" },
-                  { name: "checkin", label: "Check-in Date", type: "date", placeholder: "" },
-                  { name: "checkout", label: "Check-out Date", type: "date", placeholder: "" },
-                ].map(f => (
-                  <div key={f.name}>
-                    <label style={{ ...label, color: C.muted }}>{f.label}</label>
-                    <input type={f.type} name={f.name} value={form[f.name]} onChange={onChange}
-                      placeholder={f.placeholder}
-                      style={{
-                        width: "100%", padding: "13px 16px",
-                        background: C.beige, border: `1px solid rgba(45,31,20,0.14)`,
-                        borderRadius: "4px", fontFamily: "'Jost', sans-serif",
-                        fontSize: "0.9rem", color: C.charcoal, outline: "none", boxSizing: "border-box",
-                      }} />
+          </motion.div>
+
+          <div className="mx-auto w-full max-w-7xl">
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3, ease: E }}
+              className="micro-title mb-7 text-sm font-bold uppercase"
+              style={{ color: CORAL }}
+            >
+              Smash burgers · Hot grill · Colombo
+            </motion.p>
+
+            <div className="overflow-hidden pb-2">
+              <motion.h1
+                initial={{ y: "105%", opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 1.05, delay: 0.4, ease: E }}
+                className="text-[18vw] font-black leading-[0.9] tracking-[-0.04em] md:text-[12vw] lg:text-[9.5vw]"
+              >
+                Burgers
+              </motion.h1>
+            </div>
+            <div className="overflow-hidden pb-2">
+              <motion.h1
+                initial={{ y: "105%", opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 1.05, delay: 0.55, ease: E }}
+                className="text-[18vw] font-black leading-[0.9] tracking-[-0.04em] md:text-[12vw] lg:text-[9.5vw]"
+                style={{ color: CORAL }}
+              >
+                made right.
+              </motion.h1>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, delay: 0.85, ease: E }}
+              className="mt-14 flex flex-col items-start justify-between gap-10 border-t border-white/[0.10] pt-10 md:flex-row md:items-end"
+            >
+              <p className="soft-copy max-w-sm text-base text-white/60 md:text-lg">
+                Hot smashed patties, house-made sauces, toasted buns — and every single burger built only after you order.
+              </p>
+              <div className="flex flex-wrap gap-6">
+                <motion.a
+                  href="#menu"
+                  whileHover={{ scale: 1.05, y: -3 }}
+                  whileTap={{ scale: 0.96 }}
+                  className="luxury-cta group inline-flex items-center gap-3 rounded-full px-8 py-4 font-black text-black shadow-2xl"
+                  style={{ background: `linear-gradient(135deg, ${CORAL} 0%, #f5b074 100%)`, boxShadow: "0 20px 60px -10px rgba(234,144,114,0.5)" }}
+                >
+                  See the Menu <ArrowUpRight className="h-5 w-5 transition group-hover:rotate-45" />
+                </motion.a>
+                <motion.a
+                  href="https://wa.me/94706857171"
+                  target="_blank"
+                  rel="noreferrer"
+                  whileHover={{ scale: 1.03, y: -3 }}
+                  className="luxury-cta inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/[0.08] px-8 py-4 font-bold text-white backdrop-blur-xl transition hover:bg-white/[0.15]"
+                >
+                  <MessageCircle className="h-4 w-4" style={{ color: CORAL }} /> Order on WhatsApp
+                </motion.a>
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+      </section>
+
+      <div className="relative z-10 overflow-hidden border-y border-white/[0.08] py-5" style={{ background: "rgba(234,144,114,0.07)" }}>
+        <motion.div animate={{ x: [0, "-50%"] }} transition={{ duration: 24, repeat: Infinity, ease: "linear" }} className="flex whitespace-nowrap">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <span key={i} className="micro-title mx-10 inline-flex items-center gap-7 text-sm font-bold uppercase text-white/42">
+              Smash burgers <span style={{ color: CORAL }}>✦</span>
+              House sauces <span style={{ color: CORAL }}>✦</span>
+              Built to order <span style={{ color: CORAL }}>✦</span>
+              Hot grill <span style={{ color: CORAL }}>✦</span>
+              Colombo <span style={{ color: CORAL }}>✦</span>
+            </span>
+          ))}
+        </motion.div>
+      </div>
+
+      <section ref={statsRef} className="relative z-10 mx-auto grid max-w-7xl gap-4 px-6 py-32 md:grid-cols-4 md:py-40">
+        {[
+          ["2×", "Smash patty options"],
+          ["7", "House-made sauces"],
+          ["12 min", "Avg. serve time"],
+          ["4.9★", "Customer rating"],
+        ].map(([n, l], i) => (
+          <motion.div
+            key={l}
+            initial={{ opacity: 0, y: 30 }}
+            animate={statsIn ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: i * 0.12, ease: E }}
+            whileHover={{ y: -10, scale: 1.015 }}
+            className="luxury-card group rounded-[2rem] border border-white/[0.08] p-9 transition hover:border-[#EA9072]/40"
+            style={{ background: "rgba(255,255,255,0.035)" }}
+          >
+            <motion.div
+              className="display-font text-6xl font-black tracking-[-0.035em]"
+              style={{ color: CORAL }}
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={statsIn ? { opacity: 1, scale: 1 } : {}}
+              transition={{ duration: 0.7, delay: i * 0.12 + 0.25, type: "spring" }}
+            >
+              {n}
+            </motion.div>
+            <p className="micro-title mt-4 text-sm font-bold uppercase text-white/42">{l}</p>
+          </motion.div>
+        ))}
+      </section>
+
+      <section id="story" ref={storyRef} className="relative z-10 mx-auto grid max-w-7xl gap-16 px-6 pb-40 md:pb-48 lg:grid-cols-[1fr_1fr] lg:items-stretch">
+        <motion.div
+          initial={{ opacity: 0, x: -40 }}
+          animate={storyIn ? { opacity: 1, x: 0 } : {}}
+          transition={{ duration: 1, ease: E }}
+          className="relative min-h-[70vh] overflow-hidden rounded-[2.8rem]"
+        >
+          <motion.img
+            src="https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=1200&q=90"
+            alt="Ember Bun story"
+            className="h-full w-full object-cover"
+            whileHover={{ scale: 1.045 }}
+            transition={{ duration: 0.95, ease: E }}
+          />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(10,7,5,0.85) 0%, transparent 55%)" }} />
+          <div className="absolute bottom-8 left-8 right-8 md:bottom-10 md:left-10 md:right-10">
+            <span className="micro-title mb-4 inline-block rounded-full border border-white/20 px-5 py-2 text-xs font-black uppercase" style={{ color: CORAL }}>
+              Est. 2024 · Colombo
+            </span>
+            <p className="text-2xl font-black tracking-tight text-white/90 md:text-3xl">
+              "Proper burgers for people who notice the difference."
+            </p>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, x: 40 }}
+          animate={storyIn ? { opacity: 1, x: 0 } : {}}
+          transition={{ duration: 1, delay: 0.1, ease: E }}
+          className="flex flex-col justify-center py-8"
+        >
+          <p className="micro-title mb-7 text-sm font-bold uppercase" style={{ color: CORAL }}>
+            Why we exist
+          </p>
+          <h2 className="text-5xl font-black leading-[0.96] tracking-[-0.04em] md:text-6xl">
+            A burger that smells like the grill before you sit down.
+          </h2>
+          <p className="soft-copy mt-9 text-lg text-white/58">
+            Ember Bun was built because we were tired of flat frozen patties under heat lamps and sauces from a commercial bottle. We wanted the crust, the cheese pull, the bite that makes you pause and look at the thing.
+          </p>
+          <p className="soft-copy mt-6 text-lg text-white/48">
+            So we built it. Open grill, fresh patties, house sauces, and a rule: nothing gets made until you order it.
+          </p>
+
+          <div className="mt-12 flex flex-wrap gap-3">
+            {["No frozen patties", "House-made daily", "Built after order", "Open grill"].map((t) => (
+              <span key={t} className="rounded-full border border-white/15 px-5 py-2.5 text-xs font-bold text-white/58">
+                {t}
+              </span>
+            ))}
+          </div>
+
+          <motion.a
+            href="#menu"
+            whileHover={{ x: 8 }}
+            transition={{ type: "spring", stiffness: 280 }}
+            className="mt-12 inline-flex w-fit items-center gap-3 font-black text-white/72 transition hover:text-white"
+          >
+            View the menu <ArrowRight className="h-5 w-5" style={{ color: CORAL }} />
+          </motion.a>
+        </motion.div>
+      </section>
+
+      <section id="menu" className="relative z-10 rounded-t-[3.2rem]" style={{ background: CREAM, color: BROWN }}>
+        <div className="mx-auto max-w-7xl px-6 py-32 md:py-40">
+          <div className="mb-24 flex flex-col items-start justify-between gap-10 md:flex-row md:items-end">
+            <FadeUp className="max-w-xl">
+              <p className="micro-title mb-5 text-sm font-black uppercase text-black/42">The menu</p>
+              <h2 className="text-6xl font-black leading-[0.98] tracking-[-0.04em] md:text-8xl">
+                Different cravings. Same serious energy.
+              </h2>
+            </FadeUp>
+            <FadeUp delay={0.1} className="max-w-xs">
+              <p className="soft-copy text-lg text-black/58">
+                Each card is written like a real chef's menu — not a marketing bullet list.
+              </p>
+            </FadeUp>
+          </div>
+
+          <div className="space-y-3">
+            {BURGERS.map((b, i) => (
+              <FadeUp key={b.name} delay={i * 0.08}>
+                <motion.div
+                  onClick={() => setActiveMenu(activeMenu === i ? -1 : i)}
+                  whileHover={{ y: -3, backgroundColor: "rgba(234,144,114,0.06)" }}
+                  transition={{ duration: 0.45, ease: E }}
+                  className="group relative cursor-pointer overflow-hidden rounded-[1.7rem] border border-black/[0.08] p-7 transition md:p-10"
+                >
+                  <div className="flex items-center justify-between gap-6">
+                    <div className="flex items-center gap-7 md:gap-12">
+                      <span className="display-font w-10 text-lg font-black text-black/20">{b.no}</span>
+                      <div>
+                        <p className="micro-title mb-2 text-xs font-bold uppercase text-black/42">{b.type}</p>
+                        <h3 className="text-2xl font-black tracking-[-0.035em] md:text-3xl">{b.name}</h3>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-8">
+                      <span className="hidden text-xl font-black md:block" style={{ color: CORAL }}>
+                        {b.price}
+                      </span>
+                      <motion.div
+                        animate={{ rotate: activeMenu === i ? 45 : 0 }}
+                        transition={{ duration: 0.35, ease: E }}
+                        className="grid h-11 w-11 flex-shrink-0 place-items-center rounded-full border-2 border-black/15 text-black/40 transition group-hover:border-[#EA9072] group-hover:text-[#EA9072]"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </motion.div>
+                    </div>
                   </div>
+
+                  <AnimatePresence>
+                    {activeMenu === i && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.5, ease: E }}
+                        className="overflow-hidden"
+                      >
+                        <div className="mt-8 grid gap-8 md:grid-cols-[1fr_auto] md:items-end">
+                          <div className="flex items-start gap-7">
+                            <div className="h-32 w-32 flex-shrink-0 overflow-hidden rounded-3xl">
+                              <motion.img src={b.img} alt={b.name} className="h-full w-full object-cover" whileHover={{ scale: 1.08 }} transition={{ duration: 0.8, ease: E }} />
+                            </div>
+                            <div>
+                              <p className="soft-copy text-base text-black/58">{b.desc}</p>
+                              <div className="mt-4 flex gap-2">
+                                <span className="rounded-full bg-black/[0.08] px-4 py-1.5 text-xs font-bold">Heat: {b.heat}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <a
+                            href={`https://wa.me/94706857171?text=Hi, I'd like to order ${encodeURIComponent(b.name)}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="luxury-cta inline-flex items-center gap-2 self-end rounded-full px-6 py-3 text-sm font-black text-black transition hover:opacity-90"
+                            style={{ background: `linear-gradient(135deg, ${CORAL}, #f5b074)` }}
+                          >
+                            <ShoppingBag className="h-4 w-4" /> Order this
+                          </a>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              </FadeUp>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="process" ref={processRef} className="relative z-10" style={{ background: CREAM, color: BROWN }}>
+        <div className="mx-auto max-w-7xl px-6 pb-40 md:pb-48">
+          <div className="overflow-hidden rounded-[3.2rem]" style={{ background: DARK }}>
+            <div className="px-8 py-20 md:px-16 md:py-24">
+              <div className="mb-20 flex flex-col items-start justify-between gap-8 md:flex-row md:items-end">
+                <FadeUp className="max-w-xl">
+                  <p className="micro-title mb-5 text-sm font-black uppercase" style={{ color: CORAL }}>
+                    The process
+                  </p>
+                  <h2 className="text-5xl font-black leading-[0.96] tracking-[-0.04em] text-white md:text-6xl">
+                    From cold patty to your hand. No skipped steps.
+                  </h2>
+                </FadeUp>
+                <FadeUp delay={0.1} className="max-w-xs">
+                  <p className="soft-copy text-base text-white/48">
+                    We're not hiding the process. Here it is, step by step, so you know why it takes 12 minutes.
+                  </p>
+                </FadeUp>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                {STEPS.map(({ n, title, body }, i) => (
+                  <motion.div
+                    key={n}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={processIn ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.8, delay: i * 0.12, ease: E }}
+                    whileHover={{ y: -8, scale: 1.012, backgroundColor: "rgba(234,144,114,0.06)" }}
+                    className="luxury-card rounded-[2rem] border border-white/[0.06] p-9 transition"
+                  >
+                    <div className="mb-10 flex items-center justify-between">
+                      <span className="display-font text-5xl font-black" style={{ color: CORAL, opacity: 0.35 }}>
+                        {n}
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-black leading-[1.18] tracking-[-0.02em] text-white">{title}</h3>
+                    <p className="soft-copy mt-5 text-sm text-white/48">{body}</p>
+                  </motion.div>
                 ))}
               </div>
-              <div style={{ marginBottom: "26px" }}>
-                <label style={{ ...label, color: C.muted }}>Message / Special Requests</label>
-                <textarea name="message" value={form.message} onChange={onChange} rows={4}
-                  placeholder="Let us know about special occasions, dietary preferences, or anything else we should prepare..."
-                  style={{
-                    width: "100%", padding: "13px 16px", background: C.beige,
-                    border: `1px solid rgba(45,31,20,0.14)`, borderRadius: "4px",
-                    fontFamily: "'Jost', sans-serif", fontSize: "0.9rem", color: C.charcoal,
-                    outline: "none", resize: "vertical", boxSizing: "border-box",
-                  }} />
-              </div>
-              <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", alignItems: "center" }}>
-                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                  onClick={() => setDone(true)}
-                  style={{
-                    padding: "15px 40px", background: C.charcoal, color: C.gold,
-                    border: "none", borderRadius: "2px", fontFamily: "'Jost', sans-serif",
-                    fontSize: "0.78rem", fontWeight: 600, letterSpacing: "0.13em",
-                    textTransform: "uppercase", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px",
-                  }}><Send size={14} />Send Booking Request</motion.button>
-                <a href="https://wa.me/94771234567" target="_blank" rel="noreferrer"
-                  style={{ display: "flex", alignItems: "center", gap: "8px", color: C.muted, fontFamily: "'Jost', sans-serif", fontSize: "0.82rem", textDecoration: "none" }}>
-                  <MessageCircle size={16} color="#25D366" />
-                  Prefer quick replies? Book directly on WhatsApp.
-                </a>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </section>
-  );
-}
-
-/* ════════════════════════════ FAQ ════════════════════════════════════ */
-const FAQS = [
-  { q: "What time is check-in?", a: "Check-in is from 2:00 PM. Early check-in from 10:00 AM can usually be arranged — just mention it when you book and we'll do our best to accommodate you." },
-  { q: "Is breakfast included?", a: "Yes. A fresh tropical breakfast is prepared and delivered to your villa every morning. We cater to all dietary preferences — just let us know when booking." },
-  { q: "Do you offer airport pickup?", a: "We do. Our team can arrange a private transfer from Bandaranaike International Airport directly to the villa. Please share your arrival details when confirming your booking." },
-  { q: "Can we request a private chef?", a: "Absolutely. A private chef is available on request for in-villa lunches, dinners, and special occasions. We use seasonal, locally sourced ingredients whenever possible." },
-  { q: "Is the villa suitable for families?", a: "Yes — especially the Sunset Residence, which has three bedrooms and generous living space. Baby cots, high chairs, and babysitting services can all be arranged on request." },
-  { q: "How do we confirm a booking?", a: "Send us an inquiry via the form or WhatsApp. We'll reply within a few hours with availability and rates. A 30% deposit confirms the reservation, with the balance due on arrival." },
-];
-
-function FAQ() {
-  const [open, setOpen] = useState(null);
-  const [ref, inView] = useReveal();
-  return (
-    <section style={{ background: C.ivory, padding: "120px 48px" }}>
-      <div ref={ref} style={{ maxWidth: 780, margin: "0 auto" }}>
-        <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={stagger}
-          style={{ textAlign: "center", marginBottom: "76px" }}>
-          <motion.p variants={fadeUp} style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", color: C.gold, textTransform: "uppercase", marginBottom: "16px" }}>Before You Arrive</motion.p>
-          <motion.h2 variants={fadeUp} style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(2rem,4vw,3.6rem)", fontWeight: 400, color: C.charcoal }}>Common questions</motion.h2>
-        </motion.div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "11px" }}>
-          {FAQS.map((f, i) => (
-            <motion.div key={f.q}
-              initial={{ opacity: 0, y: 18 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] }}
-              style={{
-                border: `1px solid ${open === i ? "rgba(201,169,110,0.42)" : "rgba(45,31,20,0.11)"}`,
-                borderRadius: "8px", overflow: "hidden",
-                background: open === i ? "rgba(201,169,110,0.04)" : C.ivory, transition: "all 0.3s ease",
-              }}>
-              <button onClick={() => setOpen(open === i ? null : i)}
-                style={{
-                  width: "100%", display: "flex", alignItems: "center",
-                  justifyContent: "space-between", padding: "22px 28px",
-                  background: "none", border: "none", cursor: "pointer", textAlign: "left",
-                }}>
-                <span style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.94rem", fontWeight: 500, color: C.charcoal }}>{f.q}</span>
-                <motion.span animate={{ rotate: open === i ? 180 : 0 }} transition={{ duration: 0.3 }}>
-                  <ChevronDown size={17} color={C.gold} />
-                </motion.span>
-              </button>
-              <AnimatePresence>
-                {open === i && (
-                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                    style={{ overflow: "hidden" }}>
-                    <p style={{ padding: "0 28px 24px", fontFamily: "'Jost', sans-serif", fontSize: "0.87rem", color: C.muted, lineHeight: 1.82, fontWeight: 300 }}>{f.a}</p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ════════════════════════════ FOOTER ════════════════════════════════ */
-function Footer() {
-  const socials = [
-    { Icon: Globe, href: "#", label: "Website" },
-    { Icon: Mail, href: "mailto:hello@aurevavillas.com", label: "Email" },
-    { Icon: MessageCircle, href: "https://wa.me/94771234567", label: "WhatsApp" },
-  ];
-
-  return (
-    <footer style={{ background: C.charcoal, borderTop: `1px solid rgba(201,169,110,0.1)`, padding: "80px 48px 40px" }}>
-      <div style={{ maxWidth: 1120, margin: "0 auto" }}>
-        <div className="grid md:grid-cols-4" style={{ gap: "52px", marginBottom: "68px" }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "9px", marginBottom: "15px" }}>
-              <span style={{ display: "inline-block", width: 7, height: 7, borderRadius: "50%", background: C.gold }} />
-              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.4rem", fontWeight: 500, color: C.ivory, letterSpacing: "0.04em" }}>Aureva Villas</span>
             </div>
-            <p style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.81rem", color: "rgba(250,248,243,0.38)", lineHeight: 1.82, fontWeight: 300 }}>
-              A boutique collection of private villas along the southern coast of Sri Lanka.
-            </p>
-            <div style={{ display: "flex", gap: "12px", marginTop: "22px" }}>
-              {socials.map(({ Icon, href, label }) => (
-                <a key={label} href={href} target={href.startsWith("http") ? "_blank" : undefined} rel={href.startsWith("http") ? "noreferrer" : undefined} aria-label={label}
-                  style={{ width: 34, height: 34, borderRadius: "50%", border: "1px solid rgba(201,169,110,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(250,248,243,0.38)", transition: "all 0.2s" }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = C.gold; e.currentTarget.style.color = C.gold; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(201,169,110,0.2)"; e.currentTarget.style.color = "rgba(250,248,243,0.38)"; }}>
-                  <Icon size={13} />
-                </a>
+          </div>
+        </div>
+      </section>
+
+      <section id="gallery" ref={galleryRef} className="relative z-10" style={{ background: CREAM }}>
+        <div className="mx-auto max-w-7xl px-6 pb-40 md:pb-48">
+          <div className="mb-14 flex flex-col justify-between gap-8 md:flex-row md:items-end">
+            <FadeUp>
+              <p className="micro-title mb-5 text-sm font-black uppercase text-black/42">Inside the kitchen</p>
+              <h2 className="max-w-2xl text-5xl font-black leading-[0.98] tracking-[-0.04em] md:text-6xl" style={{ color: BROWN }}>
+                Let the kitchen do the talking.
+              </h2>
+            </FadeUp>
+            <FadeUp delay={0.08} className="max-w-xs">
+              <p className="soft-copy text-base text-black/52">Real grill, real sauce, real rush-hour cravings.</p>
+            </FadeUp>
+          </div>
+
+          <div className="grid auto-rows-[280px] grid-cols-2 gap-6 md:grid-cols-4 md:grid-rows-2">
+            <FadeUp delay={0} className="col-span-2 row-span-2">
+              <motion.div whileHover={{ scale: 1.015 }} transition={{ duration: 0.55, ease: E }} className="group relative h-full min-h-[320px] overflow-hidden rounded-[2.8rem]">
+                <motion.img src={GALLERY[0].img} alt={GALLERY[0].label} className="h-full w-full object-cover" whileHover={{ scale: 1.06 }} transition={{ duration: 0.85, ease: E }} />
+                <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(10,7,5,0.72) 0%, transparent 55%)" }} />
+                <div className="absolute bottom-7 left-7">
+                  <p className="text-xl font-black text-white">{GALLERY[0].label}</p>
+                </div>
+              </motion.div>
+            </FadeUp>
+
+            {GALLERY.slice(1).map(({ img, label }, i) => (
+              <FadeUp key={img} delay={(i + 1) * 0.09} className={i === 2 ? "col-span-2" : ""}>
+                <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.45, ease: E }} className="group relative h-full min-h-[130px] overflow-hidden rounded-[2.1rem]">
+                  <motion.img src={img} alt={label} className="h-full w-full object-cover" whileHover={{ scale: 1.08 }} transition={{ duration: 0.75, ease: E }} />
+                  <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(10,7,5,0.68) 0%, transparent 55%)" }} />
+                  <div className="absolute bottom-5 left-5">
+                    <p className="text-sm font-black text-white">{label}</p>
+                  </div>
+                </motion.div>
+              </FadeUp>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section ref={reviewRef} className="relative z-10" style={{ background: CREAM }}>
+        <div className="mx-auto max-w-7xl px-6 pb-40 md:pb-48">
+          <div className="overflow-hidden rounded-[3.2rem] px-8 py-20 md:px-16 md:py-24" style={{ background: DARK }}>
+            <FadeUp className="mb-16">
+              <p className="micro-title mb-5 text-sm font-bold uppercase" style={{ color: CORAL }}>
+                People talk
+              </p>
+              <h2 className="max-w-2xl text-5xl font-black leading-[0.96] tracking-[-0.04em] text-white md:text-6xl">
+                Burgers people remember after the last bite.
+              </h2>
+            </FadeUp>
+            <div className="grid gap-8 md:grid-cols-3">
+              {REVIEWS.map(({ q, name, sub }, i) => (
+                <motion.div
+                  key={name}
+                  initial={{ opacity: 0, y: 28 }}
+                  animate={reviewIn ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.8, delay: i * 0.12, ease: E }}
+                  whileHover={{ y: -10, scale: 1.015, borderColor: "rgba(234,144,114,0.38)" }}
+                  className="luxury-card rounded-[2rem] border border-white/[0.08] p-9 transition"
+                  style={{ background: "rgba(255,255,255,0.035)" }}
+                >
+                  <div className="mb-6 flex gap-1">
+                    {[0, 1, 2, 3, 4].map((j) => (
+                      <Star key={j} className="h-4 w-4 fill-[#EA9072] text-[#EA9072]" />
+                    ))}
+                  </div>
+                  <p className="soft-copy text-lg font-bold text-white/72">"{q}"</p>
+                  <div className="mt-9 border-t border-white/[0.08] pt-6">
+                    <p className="text-sm font-black" style={{ color: CORAL }}>
+                      {name}
+                    </p>
+                    <p className="mt-1 text-xs text-white/35">{sub}</p>
+                  </div>
+                </motion.div>
               ))}
             </div>
           </div>
+        </div>
+      </section>
 
-          <div>
-            <p style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.66rem", letterSpacing: "0.2em", color: C.gold, textTransform: "uppercase", marginBottom: "20px" }}>Explore</p>
-            {["Villas", "Experiences", "Gallery", "About Us", "Location"].map(l => (
-              <a key={l} href={`#${l.toLowerCase().replace(" ", "-")}`}
-                style={{ display: "block", fontFamily: "'Jost', sans-serif", fontSize: "0.83rem", color: "rgba(250,248,243,0.46)", textDecoration: "none", marginBottom: "12px", transition: "color 0.2s" }}
-                onMouseEnter={e => (e.currentTarget.style.color = C.ivory)}
-                onMouseLeave={e => (e.currentTarget.style.color = "rgba(250,248,243,0.46)")}>{l}</a>
-            ))}
-          </div>
-
-          <div>
-            <p style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.66rem", letterSpacing: "0.2em", color: C.gold, textTransform: "uppercase", marginBottom: "20px" }}>Contact</p>
-            {[
-              [MapPin, "Mirissa, Southern Province, Sri Lanka"],
-              [Phone, "+94 77 XXX XXXX"],
-              [Mail, "hello@aureavavillas.com"],
-            ].map(([Icon, txt]) => (
-              <div key={txt} style={{ display: "flex", gap: "10px", marginBottom: "13px", alignItems: "flex-start" }}>
-                <Icon size={12} color={C.gold} style={{ marginTop: 2, flexShrink: 0 }} />
-                <p style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.8rem", color: "rgba(250,248,243,0.46)", lineHeight: 1.5 }}>{txt}</p>
+      <section id="visit" ref={visitRef} className="relative z-10 pb-12" style={{ background: CREAM }}>
+        <div className="mx-auto max-w-7xl px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={visitIn ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 1.05, ease: E }}
+            className="overflow-hidden rounded-[3.2rem] p-12 md:p-20"
+            style={{ background: `linear-gradient(135deg, ${CORAL} 0%, #f0a070 50%, #f5c070 100%)` }}
+          >
+            <div className="grid gap-16 lg:grid-cols-[1.1fr_.9fr] lg:items-end">
+              <div>
+                <p className="micro-title mb-7 text-sm font-black uppercase text-black/52">Visit · Pre-order · Delivery</p>
+                <h2 className="text-6xl font-black leading-[0.98] tracking-[-0.04em] text-black md:text-8xl">
+                  Come hungry. Leave quiet.
+                </h2>
+                <p className="soft-copy mt-8 max-w-lg text-lg font-bold text-black/58">
+                  Walk in, WhatsApp ahead, or get hot delivery for the office. Proper portions. No sad tiny burger energy.
+                </p>
               </div>
-            ))}
-            <a href="https://wa.me/94771234567" target="_blank" rel="noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "9px 20px", background: "#25D366", color: "#fff", borderRadius: "4px", fontFamily: "'Jost', sans-serif", fontSize: "0.73rem", fontWeight: 500, textDecoration: "none", letterSpacing: "0.06em", marginTop: "10px" }}>
-              <MessageCircle size={13} />WhatsApp Us
-            </a>
-          </div>
-
-          <div>
-            <p style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.66rem", letterSpacing: "0.2em", color: C.gold, textTransform: "uppercase", marginBottom: "20px" }}>Stay Connected</p>
-            <p style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.8rem", color: "rgba(250,248,243,0.38)", lineHeight: 1.75, marginBottom: "20px", fontWeight: 300 }}>
-              Seasonal offers and quiet news from the coast. No clutter.
-            </p>
-            <div style={{ display: "flex", gap: "8px" }}>
-              <input type="email" placeholder="your@email.com"
-                style={{ flex: 1, padding: "11px 14px", background: "rgba(250,248,243,0.06)", border: "1px solid rgba(201,169,110,0.2)", borderRadius: "2px", color: C.ivory, fontFamily: "'Jost', sans-serif", fontSize: "0.8rem", outline: "none", minWidth: 0 }} />
-              <button style={{ padding: "11px 14px", background: C.gold, border: "none", borderRadius: "2px", cursor: "pointer", display: "flex", alignItems: "center" }}>
-                <ArrowRight size={14} color={C.charcoal} />
-              </button>
+              <div className="space-y-5">
+                {[
+                  [MapPin, "Location", "Colombo, Sri Lanka"],
+                  [Clock, "Open hours", "Every day — 11 AM to 11 PM"],
+                  [Phone, "WhatsApp", "070 685 7171"],
+                ].map(([Icon, label, val]) => (
+                  <motion.div
+                    key={label}
+                    whileHover={{ x: 6, backgroundColor: "rgba(0,0,0,0.14)" }}
+                    transition={{ duration: 0.35, ease: E }}
+                    className="flex items-center gap-5 rounded-3xl bg-black/[0.10] px-6 py-5 backdrop-blur-sm"
+                  >
+                    <Icon className="h-5 w-5 flex-shrink-0 text-black" />
+                    <div>
+                      <p className="font-black text-black">{label}</p>
+                      <p className="text-sm font-bold text-black/60">{val}</p>
+                    </div>
+                  </motion.div>
+                ))}
+                <motion.a
+                  href="https://wa.me/94706857171"
+                  target="_blank"
+                  rel="noreferrer"
+                  whileHover={{ scale: 1.04, y: -3 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="luxury-cta inline-flex w-full items-center justify-center gap-3 rounded-full px-8 py-5 text-lg font-black text-white shadow-2xl"
+                  style={{ background: DARK, boxShadow: "0 20px 50px -10px rgba(10,7,5,0.5)" }}
+                >
+                  <MessageCircle className="h-5 w-5" style={{ color: CORAL }} />
+                  Order on WhatsApp
+                  <ArrowUpRight className="h-5 w-5" />
+                </motion.a>
+              </div>
             </div>
-          </div>
+          </motion.div>
         </div>
+      </section>
 
-        <div style={{ borderTop: "1px solid rgba(250,248,243,0.06)", paddingTop: "28px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-          <p style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.73rem", color: "rgba(250,248,243,0.22)" }}>
-            © {new Date().getFullYear()} Aureva Villas. All rights reserved.
-          </p>
-          <p style={{ fontFamily: "'Jost', sans-serif", fontSize: "0.73rem", color: "rgba(250,248,243,0.22)" }}>
-            Developed by{" "}
-            <a href="https://vasterglobal.com" target="_blank" rel="noreferrer" style={{ color: C.gold, textDecoration: "none" }}>Vaster Global</a>
-          </p>
+      <footer className="relative z-10 px-6 pb-10 pt-10" style={{ background: CREAM }}>
+        <div className="mx-auto max-w-7xl">
+          <motion.div
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.9, ease: E }}
+            className="border-t border-black/[0.10] pt-14 md:pt-16"
+          >
+            <div className="grid gap-14 md:grid-cols-2 lg:grid-cols-[1.35fr_1fr_1fr_1fr] lg:gap-16">
+              <div>
+                <motion.a
+                  href="#top"
+                  whileHover={{ y: -3 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                  className="mb-8 inline-flex items-center gap-4"
+                >
+                  <div
+                    className="grid h-12 w-12 place-items-center rounded-full text-black shadow-lg shadow-black/5"
+                    style={{ background: `linear-gradient(135deg, ${CORAL}, #f5b074)` }}
+                  >
+                    <Flame className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-xl font-black leading-none tracking-[-0.045em]" style={{ color: BROWN }}>
+                      Ember Bun
+                    </p>
+                    <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.36em] text-black/35">
+                      Burger House
+                    </p>
+                  </div>
+                </motion.a>
+
+                <p className="max-w-sm text-[15px] leading-8 text-black/50 md:text-base">
+                  Colombo's bold burger house. Hot grill, house sauces, toasted buns, and every stack built only after you order.
+                </p>
+
+                <div className="mt-9 flex gap-3">
+                  <motion.a
+                    href="https://wa.me/94706857171"
+                    target="_blank"
+                    rel="noreferrer"
+                    whileHover={{ y: -4, scale: 1.06 }}
+                    whileTap={{ scale: 0.96 }}
+                    className="grid h-11 w-11 place-items-center rounded-full bg-black/[0.06] text-black/50 transition hover:text-black"
+                    aria-label="WhatsApp Ember Bun"
+                  >
+                    <MessageCircle className="h-5 w-5" />
+                  </motion.a>
+                  <motion.a
+                    href="tel:0706857171"
+                    whileHover={{ y: -4, scale: 1.06 }}
+                    whileTap={{ scale: 0.96 }}
+                    className="grid h-11 w-11 place-items-center rounded-full bg-black/[0.06] text-black/50 transition hover:text-black"
+                    aria-label="Call Ember Bun"
+                  >
+                    <Phone className="h-5 w-5" />
+                  </motion.a>
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-8 text-[12px] font-black uppercase tracking-[0.42em] text-black/35">
+                  Navigate
+                </p>
+                <ul className="space-y-5">
+                  {[
+                    ["Our story", "#story"],
+                    ["The menu", "#menu"],
+                    ["How it works", "#process"],
+                    ["Gallery", "#gallery"],
+                    ["Visit us", "#visit"],
+                  ].map(([label, href]) => (
+                    <li key={label}>
+                      <motion.a
+                        href={href}
+                        whileHover={{ x: 5 }}
+                        transition={{ type: "spring", stiffness: 350, damping: 24 }}
+                        className="inline-flex items-center gap-2 text-[15px] font-medium leading-7 text-black/50 transition hover:text-black md:text-base"
+                      >
+                        {label}
+                      </motion.a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <p className="mb-8 text-[12px] font-black uppercase tracking-[0.42em] text-black/35">
+                  Contact
+                </p>
+                <ul className="space-y-5">
+                  {[
+                    [MapPin, "Colombo, Sri Lanka"],
+                    [Clock, "Open daily · 11 AM – 11 PM"],
+                    [Phone, "070 685 7171"],
+                  ].map(([Icon, text]) => (
+                    <li key={text} className="flex items-center gap-3 text-[15px] font-medium leading-7 text-black/50 md:text-base">
+                      <Icon className="h-5 w-5 flex-shrink-0" style={{ color: CORAL }} />
+                      <span>{text}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <motion.a
+                  href="https://wa.me/94706857171"
+                  target="_blank"
+                  rel="noreferrer"
+                  whileHover={{ y: -3, scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="mt-9 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-black text-white shadow-xl shadow-black/10"
+                  style={{ background: DARK }}
+                >
+                  <MessageCircle className="h-4 w-4" style={{ color: CORAL }} />
+                  Order Now
+                </motion.a>
+              </div>
+
+              <div>
+                <p className="mb-8 text-[12px] font-black uppercase tracking-[0.42em] text-black/35">
+                  Our Promise
+                </p>
+                <ul className="space-y-5">
+                  {[
+                    "100% freshly grilled",
+                    "House-made sauces",
+                    "Built only after you order",
+                    "Hot pickup & delivery",
+                    "Big portions, no shortcuts",
+                  ].map((item) => (
+                    <li key={item} className="flex items-center gap-3 text-[15px] font-medium leading-7 text-black/50 md:text-base">
+                      <CheckCircle2 className="h-5 w-5 flex-shrink-0" style={{ color: CORAL }} />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="mt-16 border-t border-black/[0.10] pt-9">
+              <div className="grid items-center gap-8 md:grid-cols-3">
+                <p className="text-center text-xs font-medium tracking-wide text-black/35 md:text-left">
+                  © 2025 Ember Bun · All rights reserved
+                </p>
+
+                <motion.a
+                  href="https://vasterglobal.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  whileHover={{
+                    y: -4,
+                    scale: 1.025,
+                    boxShadow: "0 20px 46px -18px rgba(10,7,5,0.35), 0 0 36px rgba(234,144,114,0.14)",
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                  className="mx-auto flex w-fit items-center gap-4 rounded-2xl border border-black/[0.10] bg-white/90 px-6 py-4 shadow-lg shadow-black/5 backdrop-blur-sm transition"
+                  aria-label="Visit Vaster Global website"
+                >
+                  <span className="whitespace-nowrap text-[10px] font-black uppercase tracking-[0.42em] text-black/35">
+                    Developed by
+                  </span>
+
+                  <svg
+                    viewBox="0 0 260 56"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-[18px] w-auto"
+                    aria-label="Vaster"
+                  >
+                    <path d="M2 8 L16 8 L28 40 L40 8 L54 8 L34 50 L22 50 Z" fill="#E31E25" />
+                    <path d="M50 50 L64 8 L78 8 L92 50 L78 50 L74 38 L68 38 L64 50 Z" fill="#E31E25" />
+                    <path d="M69 28 L71 18 L75 28 Z" fill="#F5EDE4" />
+                    <path d="M96 40 C97 47 102 50 112 50 L124 50 C134 50 136 44 136 39 C136 33 130 30 122 28 L114 26 C108 24 106 22 106 19 C106 15 109 13 116 13 L128 13 C132 13 134 10 134 8 L98 8 C98 13 102 16 110 18 L118 20 C126 22 128 25 128 30 C128 35 124 37 116 37 L104 37 C100 37 99 38 99 41 Z" fill="#E31E25" />
+                    <path d="M132 8 L132 18 L146 18 L146 50 L160 50 L160 18 L174 18 L174 8 Z" fill="#E31E25" />
+                    <path d="M178 8 L178 50 L202 50 L202 41 L191 41 L191 33 L200 33 L200 25 L191 25 L191 17 L202 17 L202 8 Z" fill="#E31E25" />
+                    <path d="M206 8 L206 50 L220 50 L220 35 L225 35 L236 50 L252 50 L238 33 C244 31 248 26 248 20 C248 13 243 8 233 8 Z M220 18 L231 18 C235 18 236 20 236 22 C236 25 234 28 231 28 L220 28 Z" fill="#E31E25" />
+                  </svg>
+
+                  <span className="whitespace-nowrap text-[10px] font-black uppercase tracking-[0.34em] text-black/35">
+                    Global
+                  </span>
+                </motion.a>
+
+                <div className="flex justify-center gap-7 text-xs font-medium tracking-wide text-black/35 md:justify-end">
+                  <a href="#" className="transition hover:text-black/60">Privacy</a>
+                  <a href="#" className="transition hover:text-black/60">Terms</a>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
-      </div>
-    </footer>
+      </footer>
+    </div>
   );
 }
 
-/* ════════════════════════════ ROOT APP ══════════════════════════════ */
-export default function App() {
-  return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap');
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-        html{scroll-behavior:smooth}
-        body{background:#F5F0E8;overflow-x:hidden}
-        ::-webkit-scrollbar{width:5px}
-        ::-webkit-scrollbar-track{background:#1A1A18}
-        ::-webkit-scrollbar-thumb{background:#C9A96E;border-radius:3px}
-        input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5);cursor:pointer}
-        select option{background:#1A1A18;color:#FAF8F3}
-        a{cursor:pointer}
-        .grid{display:grid}
-        .grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
-        .hidden{display:none}
-        @media (min-width:640px){.sm\\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}}
-        @media (min-width:768px){
-          .md\\:flex{display:flex}
-          .md\\:hidden{display:none}
-          .md\\:block{display:block}
-          .md\\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
-          .md\\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
-        }
-        @media (min-width:1024px){
-          .lg\\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
-          .lg\\:grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
-        }
-        @media (max-width:767px){
-          nav{padding-left:24px!important;padding-right:24px!important}
-          section{padding-left:24px!important;padding-right:24px!important}
-          footer{padding-left:24px!important;padding-right:24px!important}
-        }
-      `}</style>
-      <Navbar />
-      <Hero />
-      <BookingBar />
-      <About />
-      <Villas />
-      <Amenities />
-      <Experiences />
-      <Gallery />
-      <Reviews />
-      <Location />
-      <BookingForm />
-      <FAQ />
-      <Footer />
-    </>
-  );
-}
